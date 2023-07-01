@@ -2,9 +2,7 @@ name: build
 on:
   push:
     branches:
-      - master
-      - test-sbom
-      
+      - main
 jobs:
   checkout:
     name: Checkout
@@ -17,23 +15,19 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Run Trivy vulnerability scanner - FS mode
+      - name: Run Trivy vulnerability scanner in IaC mode
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
           security-checks: 'vuln,config,secret'
           hide-progress: false
+          format: 'table'
         env:
           AQUA_KEY: ${{ secrets.AQUA_KEY }}
           AQUA_SECRET: ${{ secrets.AQUA_SECRET }}
           TRIVY_RUN_AS_PLUGIN: 'aqua'
           TRIGGERED_BY: 'PUSH'
           GITHUB_TOKEN: ${{ github.token }}
- #     - name: Upload SARIF file
- #       uses: github/codeql-action/upload-sarif@v1
- #       with:
-          # Path to SARIF file relative to the root of the repository
-#        sarif_file: results.sarif
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
